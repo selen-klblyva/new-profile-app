@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,7 +20,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public List<UserDto> getAllUsers() {
+    public List<UserDto> getAllProfiles() {
         return userRepository.findAll().stream()
                 .map(entity-> new UserDto(entity.getId(),entity.getUsername(), entity.getAge(),
                         entity.getCreatedAt(),entity.getUpdatedAt(), entity.getPhotoURL()))
@@ -27,7 +28,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto getUserById(long id) {
+    public UserDto getProfileById(long id) {
                 UserEntity userEntity = userRepository.getById(id);
                 if(userEntity == null){
                     log.error("User not found");
@@ -38,21 +39,27 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto createUser(UserDto userDto) {
-        UserEntity userEntity = new UserEntity(userDto.getId(),userDto.getUsername(),userDto.getAge(),
-                userDto.getCreatedAt(),userDto.getUpdatedAt(), userDto.getPhotoURL());
-        userRepository.create_User(userEntity);
+    public UserDto createProfile(UserDto userDto) {
+        userDto.setCreatedAt(LocalDateTime.now());
+        userDto.setUpdatedAt(LocalDateTime.now());
 
-        return userDto;
+        int rowsAffected = userRepository.createProfile(
+                userDto.getUsername(),
+                userDto.getAge(),
+                userDto.getCreatedAt(),
+                userDto.getUpdatedAt()
+        );
+
+        if (rowsAffected > 0) {
+            return userDto;
+        } else {
+            throw new RuntimeException("Do not create profile");
+        }
     }
 
     @Override
-    public UserDto updateUser(UserDto userDto) {
-        UserEntity userEntity=new UserEntity(userDto.getId(),userDto.getUsername(),userDto.getAge(),
-                userDto.getCreatedAt(),userDto.getUpdatedAt(), userDto.getPhotoURL());
-        userRepository.update_User(userEntity);
-
-        return userDto;
+    public void updateProfile(Long id, String username, int age) {
+        userRepository.updateProfile(id, username, age);
     }
 
     @Override

@@ -2,22 +2,22 @@ package az.edu.turing.newprofileapp.service;
 
 import az.edu.turing.newprofileapp.dto.UserDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface UserService {
-    public List<UserDto> getAllUsers();
+    public List<UserDto> getAllProfiles();
 
-    UserDto getUserById(long id);
+    UserDto getProfileById(long id);
 
-    UserDto createUser(UserDto userDto);
+    public UserDto createProfile(UserDto userDto);
 
-    UserDto updateUser(UserDto userDto);
+    void updateProfile(Long id,String username,int age);
 
     public long deleteById(long id);
 
     public int getCountOfAllProfiles();
 
     public long deleteAllProfiles(long id);
-
 
 }

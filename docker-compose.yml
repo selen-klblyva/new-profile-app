@@ -1,0 +1,25 @@
+version: '3.3'
+services:
+  db-postgres:
+    container_name: db_postgres
+    image: postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+  new-profile-app:
+    stdin_open: true
+    tty: true
+    container_name: new-profile-app
+    image: new-profile-app
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db-postgres
+    network_mode: "host"
