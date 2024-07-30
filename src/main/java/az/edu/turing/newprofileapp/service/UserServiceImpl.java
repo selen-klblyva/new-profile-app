@@ -2,6 +2,7 @@ package az.edu.turing.newprofileapp.service;
 
 import az.edu.turing.newprofileapp.dto.UserDto;
 import az.edu.turing.newprofileapp.entity.UserEntity;
+import az.edu.turing.newprofileapp.exception.UserNotFoundException;
 import az.edu.turing.newprofileapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -39,33 +41,56 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto createProfile(UserDto userDto) {
-        userDto.setCreatedAt(LocalDateTime.now());
-        userDto.setUpdatedAt(LocalDateTime.now());
+    public void save(UserDto userDto) {
+        UserEntity userEntity = UserEntity.builder()
+                .username(userDto.getUsername())
+                .age(userDto.getAge())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+        userRepository.save(userEntity);
+        log.info("User saved: {}", userEntity);
+    }
 
-        int rowsAffected = userRepository.createProfile(
-                userDto.getUsername(),
-                userDto.getAge(),
-                userDto.getCreatedAt(),
-                userDto.getUpdatedAt()
-        );
 
-        if (rowsAffected > 0) {
-            return userDto;
+    public UserEntity update(Long id, UserEntity userEntity) throws UserNotFoundException {
+        Optional<UserEntity> foundedUser = userRepository.findById(id);
+
+        if (foundedUser.isPresent()) {
+            UserEntity updatedUser = foundedUser.get();
+            updatedUser.setUsername(userEntity.getUsername());
+            updatedUser.setAge(userEntity.getAge());
+            updatedUser.setCreatedAt(LocalDateTime.now());
+            updatedUser.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(updatedUser);
+            log.info("User updated with id: {}", id);
+            return updatedUser;
         } else {
-            throw new RuntimeException("Do not create profile");
+            log.warn("User not found with id: {}", id);
+            throw new UserNotFoundException("User not found with id: " + id);
         }
     }
 
-    @Override
-    public void updateProfile(Long id, String username, int age) {
-        userRepository.updateProfile(id, username, age);
-    }
 
     @Override
-    public long deleteById(long id) {
+    public UserEntity updateAge(Long id, UserEntity userEntity) throws UserNotFoundException {
+        Optional<UserEntity> foundedUser = userRepository.findById(id);
+        if (foundedUser.isPresent()) {
+            UserEntity updatedUser = foundedUser.get();
+            updatedUser.setAge(userEntity.getAge());
+            userRepository.save(updatedUser);
+            log.info("User age updated with id: {}", id);
+            return updatedUser;
+        } else {
+            log.warn("User not found with id: {}", id);
+            throw new UserNotFoundException("User not found with id: " + id);
+        }
+    }
+
+
+    @Override
+    public void deleteById(long id) {
         userRepository.deleteById(id);
-        return id;
     }
 
 
@@ -75,9 +100,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public long deleteAllProfiles(long id) {
-        userRepository.deleteAllInBatch();
-        return 0;
+    public void deleteAll() {
+        userRepository.deleteAll();
     }
 
 

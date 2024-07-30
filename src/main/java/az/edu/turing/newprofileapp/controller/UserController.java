@@ -1,10 +1,11 @@
 package az.edu.turing.newprofileapp.controller;
 
 import az.edu.turing.newprofileapp.dto.UserDto;
+import az.edu.turing.newprofileapp.entity.UserEntity;
+import az.edu.turing.newprofileapp.exception.UserNotFoundException;
 import az.edu.turing.newprofileapp.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class UserController {
     private final UserService userService;
 
 
-    @GetMapping
+    @GetMapping("/all")
     public List<UserDto> getAllProfile() {
         log.info("Get all profiles:\"GET -> /api/v1/profile\"");
         return userService.getAllProfiles();
@@ -32,35 +33,40 @@ public class UserController {
 
 
     @GetMapping("/{id}")
-    public UserDto getById(@PathVariable int id) {
+    public UserDto getById(@PathVariable Long id) {
         log.info("Get profile by id: \"{}\"",id);
         return userService.getProfileById(id);
     }
 
     @PutMapping("/{id}")
-    public void updateUser(
-            @PathVariable Long id,
-            @RequestParam String username,
-            @RequestParam int age) {
-        userService.updateProfile(id, username, age);
+    public UserEntity updateUserById(@PathVariable Long id, @RequestBody UserEntity userEntity) throws UserNotFoundException {
+        log.info("Update user by id request received: {}", id);
+        return userService.update(id, userEntity);
     }
+
 
     @PostMapping
-    public UserDto create_Profile(@RequestBody UserDto userDto) {
-        log.info("Create profile: \"{}\"",userDto);
-        return userService.createProfile(userDto);
+    public void createUser(@RequestBody UserDto userDto) {
+        log.info("Create user request received: {}", userDto);
+        userService.save(userDto);
+    }
+
+    @PatchMapping("/age/{id}")
+    public UserEntity updateUserAge(@PathVariable Long id, @RequestBody UserEntity userEntity) throws UserNotFoundException {
+        log.info("Update user age by id request received: {}", id);
+        return userService.updateAge(id, userEntity);
+    }
+
+    @DeleteMapping("/all")
+    public void deleteAllProfiles(@PathVariable long id){
+        log.info("Delete all profile: \"{}\"",id);
+        userService.deleteAll();
     }
 
     @DeleteMapping("/{id}")
-    public long deleteProfileById(@PathVariable long id){
+    public void deleteProfileById(@PathVariable long id){
         log.info("Delete profile by id: \"{}\"",id);
-        return userService.deleteById(id);
-    }
-
-    @DeleteMapping("/{id}")
-    public long delete_AllProfiles(@PathVariable long id){
-        log.info("Delete profile by id: \"{}\"",id);
-        return userService.deleteAllProfiles(id);
+        userService.deleteById(id);
     }
 
 
